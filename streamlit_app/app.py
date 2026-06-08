@@ -377,7 +377,7 @@ timeline = (
     .reset_index(name="count")
 )
 
-fig_time = px.bar(
+fig_time = px.line(
     timeline,
     x="timestamp",
     y="count"
