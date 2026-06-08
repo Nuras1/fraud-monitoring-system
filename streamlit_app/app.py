@@ -30,14 +30,34 @@ def load_data():
         response.json()
     )
 
-    if "timestamp" in df.columns:
-        df["timestamp"] = pd.to_datetime(
-            df["timestamp"],
-            errors="coerce"
+    @st.cache_data(ttl=30)
+    def load_data():
+        response = requests.get(
+            API_URL,
+            timeout=60
         )
+
+        df = pd.DataFrame(
+            response.json()
+        )
+
+        return df
 
     return df
 df = load_data()
+
+st.write("TOTAL:", len(df))
+
+st.write(
+    df["timestamp"]
+    .apply(type)
+    .value_counts()
+)
+
+st.dataframe(
+    df[["timestamp"]]
+    .head(50)
+)
 
 if df.empty:
     st.error("Failed to load data from API")
