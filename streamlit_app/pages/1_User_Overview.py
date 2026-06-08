@@ -1,12 +1,13 @@
 import streamlit as st
 import pandas as pd
 import os
+import requests
 import plotly.express as px
 import plotly.graph_objects as go
 
 #from backend.user_risk_engine import calculate_user_risk
 
-#API_URL = "http://127.0.0.1:8000/transactions"
+API_URL = "https://fraud-monitoring-api.onrender.com/transactions_csv"
 
 st.title("👤 User Profile Overview")
 
@@ -40,6 +41,14 @@ def load_data():
 
     return df
 df = load_data()
+
+df["risk_score"] = df["is_fraud"].apply(
+    lambda x: 90 if float(x) == 1 else 20
+)
+
+df["risk_level"] = df["is_fraud"].apply(
+    lambda x: "DECLINED" if float(x) == 1 else "APPROVED"
+)
 
 if df.empty:
 

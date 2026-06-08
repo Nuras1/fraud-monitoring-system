@@ -1,5 +1,5 @@
 import streamlit as st
-#import requests
+import requests
 import pandas as pd
 import plotly.express as px
 import os
@@ -8,30 +8,25 @@ import plotly.graph_objects as go
 #from backend.user_risk_engine import calculate_user_risk
 #from backend.risk_engine import analyze_user
 
-#API_URL = "http://127.0.0.1:8000/transactions"
+
+API_URL = "https://fraud-monitoring-api.onrender.com/transactions_csv"
 
 st.title("🧠 Deep User Investigation")
 
 # =====================================================
 # LOAD DATA
 # =====================================================
-@st.cache_data
+@st.cache_data(ttl=30)
 def load_data():
 
-    project_root = os.path.abspath(
-        os.path.join(
-            os.path.dirname(__file__),
-            "..",
-            ".."
-        )
+    response = requests.get(
+        API_URL,
+        timeout=60
     )
 
-    csv_path = os.path.join(
-        project_root,
-        "transactions.csv"
+    df = pd.DataFrame(
+        response.json()
     )
-
-    df = pd.read_csv(csv_path)
 
     if "timestamp" in df.columns:
         df["timestamp"] = pd.to_datetime(
@@ -42,6 +37,14 @@ def load_data():
     return df
 
 df = load_data()
+
+df["risk_score"] = df["is_fraud"].apply(
+    lambda x: 90 if float(x) == 1 else 20
+)
+
+df["risk_level"] = df["is_fraud"].apply(
+    lambda x: "DECLINED" if float(x) == 1 else "APPROVED"
+)
 
 if df.empty:
 
