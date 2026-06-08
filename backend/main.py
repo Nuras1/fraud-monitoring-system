@@ -11,6 +11,9 @@ from backend.schemas import (
     TransactionCreate,
     TransactionResponse
 )
+from fastapi import FastAPI
+import pandas as pd
+import os
 from backend.user_risk_engine import calculate_user_risk
 
 app = FastAPI(title="Fraud Monitoring System")
@@ -19,6 +22,20 @@ app = FastAPI(title="Fraud Monitoring System")
 # =====================================================
 # DB INIT
 # =====================================================
+@app.get("/transactions_csv")
+def get_transactions_csv():
+
+    csv_path = os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "transactions.csv"
+    )
+
+    df = pd.read_csv(csv_path)
+
+    return df.to_dict(
+        orient="records"
+    )
 
 @app.on_event("startup")
 def on_startup():
