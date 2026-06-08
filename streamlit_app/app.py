@@ -30,34 +30,22 @@ def load_data():
         response.json()
     )
 
-    @st.cache_data(ttl=30)
-    def load_data():
-        response = requests.get(
-            API_URL,
-            timeout=60
+    if "timestamp" in df.columns:
+        df["timestamp"] = (
+            df["timestamp"]
+            .astype(str)
+            .str.replace("T", " ", regex=False)
+            .str.strip()
         )
 
-        df = pd.DataFrame(
-            response.json()
+        df["timestamp"] = pd.to_datetime(
+            df["timestamp"],
+            format="mixed",
+            errors="coerce"
         )
-
-        return df
 
     return df
 df = load_data()
-
-st.write("TOTAL:", len(df))
-
-st.write(
-    df["timestamp"]
-    .apply(type)
-    .value_counts()
-)
-
-st.dataframe(
-    df[["timestamp"]]
-    .head(50)
-)
 
 if df.empty:
     st.error("Failed to load data from API")
@@ -373,34 +361,10 @@ st.plotly_chart(
 # =====================================================
 # TRANSACTION TIMELINE
 # =====================================================
-st.write("Rows in dataframe:", len(df))
 
-st.write(
-    df["timestamp"]
-    .apply(type)
-    .value_counts()
-)
 st.subheader("📈 Transaction Timeline")
-bad_rows = df[
-    pd.to_datetime(
-        df["timestamp"],
-        errors="coerce"
-    ).isna()
-]
 
-st.write(
-    bad_rows["timestamp"]
-    .astype(str)
-    .value_counts()
-    .head(50)
-)
-df["timestamp"] = (
-    pd.to_datetime(
-        df["timestamp"],
-        errors="coerce"
-    )
-    .dt.floor("s")
-)
+df["timestamp"] = df["timestamp"].dt.floor("s")
 
 df = df.dropna(subset=["timestamp"])
 
@@ -432,7 +396,6 @@ st.plotly_chart(
     fig_time,
     use_container_width=True
 )
-
 # =====================================================
 # FRAUD BY COUNTRY
 # =====================================================
