@@ -280,7 +280,6 @@ st.write(
     f"Fraud Ratio: {fraud_ratio}%"
 )
 
-
 # =====================================================
 # TRANSACTION TIMELINE
 # =====================================================
@@ -290,21 +289,27 @@ if tx_count >= 10:
     st.subheader("📈 Transaction Timeline")
 
     timeline = (
-
-        user_df.groupby(
-            user_df["timestamp"].dt.date
-        )
-
+        user_df
+        .sort_values("timestamp")
+        .set_index("timestamp")
+        .resample("1D")
         .size()
-
-        .reset_index(name="count")
+        .reset_index(name="transactions")
     )
 
     fig_timeline = px.line(
         timeline,
         x="timestamp",
-        y="count",
-        markers=True
+        y="transactions",
+        markers=True,
+        title="User Transactions Per Day"
+    )
+
+    fig_timeline.update_layout(
+        template="plotly_dark",
+        hovermode="x unified",
+        xaxis_title="Date",
+        yaxis_title="Transactions"
     )
 
     st.plotly_chart(
@@ -317,7 +322,6 @@ else:
     st.info(
         "Profile is still learning. Not enough transaction history for timeline analysis."
     )
-
 # =====================================================
 # RECIPIENTS
 # =====================================================
@@ -483,11 +487,6 @@ st.plotly_chart(
     fig_hour,
     use_container_width=True
 )
-
-
-# =====================================================
-# HIGH RISK OPERATIONS
-# =====================================================
 
 # =====================================================
 # HIGH RISK OPERATIONS
