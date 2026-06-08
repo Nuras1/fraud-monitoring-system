@@ -512,23 +512,24 @@ if risk_level in ["WATCH", "SUSPICIOUS"]:
             "country",
             "device",
             "merchant",
-            "transaction_type"
+            "transaction_type",
+            "risk_score",
+            "risk_level"
         ]
 
         if "fraud_reasons" in high_risk_df.columns:
-
             display_cols.append(
                 "fraud_reasons"
             )
 
         st.dataframe(
 
-            high_risk_df[display_cols]
+            high_risk_df
 
             .sort_values(
                 "risk_score",
                 ascending=False
-            ),
+            )[display_cols],
 
             use_container_width=True
         )
