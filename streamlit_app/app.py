@@ -354,33 +354,37 @@ st.plotly_chart(
 # TRANSACTION TIMELINE
 # =====================================================
 
+# =====================================================
+# TRANSACTION TIMELINE
+# =====================================================
+
 st.subheader("📈 Transaction Timeline")
 
 df["timestamp"] = pd.to_datetime(
     df["timestamp"],
-    format="mixed",
     errors="coerce"
 )
 
 timeline = (
-
     df
-
     .dropna(subset=["timestamp"])
-
-    .groupby(
-        df["timestamp"].dt.date
-    )
-
+    .set_index("timestamp")
+    .resample("1H")
     .size()
-
     .reset_index(name="count")
 )
 
 fig_time = px.line(
     timeline,
     x="timestamp",
-    y="count"
+    y="count",
+    markers=True
+)
+
+fig_time.update_layout(
+    xaxis_title="Time",
+    yaxis_title="Transactions",
+    hovermode="x unified"
 )
 
 st.plotly_chart(
