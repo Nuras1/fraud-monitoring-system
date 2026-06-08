@@ -353,7 +353,13 @@ st.plotly_chart(
 # =====================================================
 # TRANSACTION TIMELINE
 # =====================================================
+st.write("Rows in dataframe:", len(df))
 
+st.write(
+    df["timestamp"]
+    .apply(type)
+    .value_counts()
+)
 st.subheader("📈 Transaction Timeline")
 
 df["timestamp"] = (
