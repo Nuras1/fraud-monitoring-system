@@ -28,8 +28,16 @@ def load_data():
     )
 
     if "timestamp" in df.columns:
+        df["timestamp"] = (
+            df["timestamp"]
+            .astype(str)
+            .str.replace("T", " ", regex=False)
+            .str.strip()
+        )
+
         df["timestamp"] = pd.to_datetime(
             df["timestamp"],
+            format="mixed",
             errors="coerce"
         )
 
@@ -286,25 +294,25 @@ st.write(
 
 st.subheader("📈 Transaction Timeline")
 
-user_df = user_df.copy()
+timeline_df = user_df.copy()
 
-user_df["timestamp"] = pd.to_datetime(
-    user_df["timestamp"],
+timeline_df["timestamp"] = pd.to_datetime(
+    timeline_df["timestamp"],
     format="mixed",
     errors="coerce"
 )
 
-user_df = user_df.dropna(
+timeline_df = timeline_df.dropna(
     subset=["timestamp"]
 )
 
-if not user_df.empty:
+if not timeline_df.empty:
 
     timeline = (
-        user_df
-        .sort_values("timestamp")
-        .set_index("timestamp")
-        .resample("D")
+        timeline_df
+        .groupby(
+            timeline_df["timestamp"].dt.date
+        )
         .size()
         .reset_index(name="transactions")
     )
