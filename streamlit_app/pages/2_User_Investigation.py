@@ -260,18 +260,23 @@ st.plotly_chart(
 
 st.subheader("📈 Transaction Timeline")
 
-user_df["timestamp"] = pd.to_datetime(
-    user_df["timestamp"],
+timeline_df = user_df.copy()
+
+timeline_df["timestamp"] = pd.to_datetime(
+    timeline_df["timestamp"],
     format="mixed",
     errors="coerce"
 )
 
+timeline_df = timeline_df.dropna(
+    subset=["timestamp"]
+)
+
 timeline = (
-    user_df
-    .dropna(subset=["timestamp"])
-    .sort_values("timestamp")
-    .set_index("timestamp")
-    .resample("1D")
+    timeline_df
+    .groupby(
+        timeline_df["timestamp"].dt.date
+    )
     .size()
     .reset_index(name="transactions")
 )
