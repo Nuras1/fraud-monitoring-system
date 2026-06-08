@@ -1,53 +1,45 @@
 import streamlit as st
-import requests
+#import requests
 import pandas as pd
 import plotly.express as px
+import os
 import plotly.graph_objects as go
 
-from backend.user_risk_engine import calculate_user_risk
-from backend.risk_engine import analyze_user
+#from backend.user_risk_engine import calculate_user_risk
+#from backend.risk_engine import analyze_user
 
-API_URL = "http://127.0.0.1:8000/transactions"
+#API_URL = "http://127.0.0.1:8000/transactions"
 
 st.title("🧠 Deep User Investigation")
 
 # =====================================================
 # LOAD DATA
 # =====================================================
+@st.cache_data
 def load_data():
 
-    try:
+    project_root = os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__),
+            "..",
+            ".."
+        )
+    )
 
-        response = requests.get(
-            API_URL,
-            timeout=5
+    csv_path = os.path.join(
+        project_root,
+        "transactions.csv"
+    )
+
+    df = pd.read_csv(csv_path)
+
+    if "timestamp" in df.columns:
+        df["timestamp"] = pd.to_datetime(
+            df["timestamp"],
+            errors="coerce"
         )
 
-        if response.status_code != 200:
-            return pd.DataFrame()
-
-        df = pd.DataFrame(
-            response.json()
-        )
-
-        if "timestamp" in df.columns:
-            df["timestamp"] = pd.to_datetime(
-                df["timestamp"],
-                format="mixed",
-                errors="coerce"
-            )
-
-        return df
-
-    except Exception as e:
-
-        st.error(str(e))
-
-        return pd.DataFrame()
-
-    except:
-        return pd.DataFrame()
-
+    return df
 
 df = load_data()
 
@@ -85,15 +77,25 @@ if user_df.empty:
 # USER RISK
 # =====================================================
 
-risk_data = calculate_user_risk(
-    user_df
+fraud_count = int(user_df["is_fraud"].sum())
+
+fraud_ratio = round(
+    user_df["is_fraud"].mean() * 100,
+    2
 )
 
-risk_score = risk_data["risk_score"]
+risk_score = round(
+    (fraud_ratio * 0.8)
+    + min(fraud_count * 10, 20),
+    2
+)
 
-risk_level = risk_data["status"]
-
-fraud_ratio = risk_data["fraud_ratio"]
+if fraud_count >= 2:
+    risk_level = "SUSPICIOUS"
+elif fraud_count >= 1:
+    risk_level = "WATCH"
+else:
+    risk_level = "NORMAL"
 
 # =====================================================
 # HEADER
@@ -113,7 +115,7 @@ night_tx = user_df[
     )
 ]
 
-alerts = analyze_user(user_df)
+alerts = []
 
 if fraud_ratio >= 20:
     alerts.append(
@@ -166,7 +168,7 @@ col1.metric(
 
 col2.metric(
     "Fraud Count",
-    risk_data["fraud_count"]
+    fraud_count
 )
 
 col3.metric(
@@ -215,7 +217,9 @@ else:
 # =====================================================
 # RISK DISTRIBUTION
 # =====================================================
-
+user_df["risk_score"] = user_df["is_fraud"].apply(
+    lambda x: 90 if x else 20
+)
 st.subheader("📉 Risk Distribution")
 
 fig_risk = px.histogram(
@@ -394,26 +398,18 @@ st.plotly_chart(
 st.subheader("🚨 High Risk Operations")
 
 high_risk_df = user_df[
-
-    (user_df["risk_level"] == "REVIEW")
-
-    |
-
-    (user_df["risk_level"] == "DECLINED")
+    user_df["is_fraud"] == True
 ]
 
 if not high_risk_df.empty:
 
     display_cols = [
-
         "transaction_id",
         "amount",
         "country",
         "device",
         "merchant",
-        "transaction_type",
-        "risk_score",
-        "risk_level"
+        "transaction_type"
     ]
 
     if "fraud_reasons" in high_risk_df.columns:
