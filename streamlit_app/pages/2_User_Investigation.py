@@ -9,7 +9,7 @@ import plotly.graph_objects as go
 #from backend.risk_engine import analyze_user
 
 
-API_URL = "https://fraud-monitoring-api.onrender.com/transactions_csv"
+API_URL = "https://fraud-monitoring-api.onrender.com/transactions"
 
 st.title("🧠 Deep User Investigation")
 

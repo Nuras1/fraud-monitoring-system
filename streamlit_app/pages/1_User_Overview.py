@@ -7,7 +7,7 @@ import plotly.graph_objects as go
 
 #from backend.user_risk_engine import calculate_user_risk
 
-API_URL = "https://fraud-monitoring-api.onrender.com/transactions_csv"
+API_URL = "https://fraud-monitoring-api.onrender.com/transactions"
 
 st.title("👤 User Profile Overview")
 

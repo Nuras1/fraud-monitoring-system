@@ -15,7 +15,7 @@ sys.path.append(
     )
 )
 
-API_URL = "https://fraud-monitoring-api.onrender.com/transactions_csv"
+API_URL = "https://fraud-monitoring-api.onrender.com/transactions"
 # from backend.user_risk_engine import calculate_user_risk
 
 @st.cache_data(ttl=30)
@@ -38,23 +38,32 @@ def load_data():
 
     return df
 df = load_data()
+
 if df.empty:
     st.error("Failed to load data from API")
     st.stop()
-# временно создаем поля для Streamlit
 
-df["is_fraud"] = pd.to_numeric(
-    df["is_fraud"],
+df["risk_score"] = pd.to_numeric(
+    df["risk_score"],
     errors="coerce"
 ).fillna(0)
 
-df["risk_score"] = df["is_fraud"].apply(
-    lambda x: 0.9 if x == 1 else 0.2
+df["is_fraud"] = (
+    pd.to_numeric(
+        df["is_fraud"],
+        errors="coerce"
+    )
+    .fillna(0)
+    .astype(int)
 )
 
-df["risk_level"] = df["is_fraud"].apply(
-    lambda x: "DECLINED" if x == 1 else "APPROVED"
+df["risk_level"] = (
+    df["risk_level"]
+    .astype(str)
+    .str.upper()
 )
+
+
 
 
 # =====================================================
