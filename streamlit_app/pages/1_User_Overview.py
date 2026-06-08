@@ -4,7 +4,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 
-from backend.user_risk_engine import calculate_user_risk
+#from backend.user_risk_engine import calculate_user_risk
 
 API_URL = "http://127.0.0.1:8000/transactions"
 
@@ -81,15 +81,25 @@ if user_df.empty:
 # USER RISK
 # =====================================================
 
-risk_data = calculate_user_risk(
-    user_df
+fraud_count = int(user_df["is_fraud"].sum())
+
+fraud_ratio = round(
+    user_df["is_fraud"].mean() * 100,
+    2
 )
 
-risk_score = risk_data["risk_score"]
+risk_score = round(
+    (fraud_ratio * 0.8)
+    + min(fraud_count * 10, 20),
+    2
+)
 
-risk_level = risk_data["status"]
-
-fraud_ratio = risk_data["fraud_ratio"]
+if fraud_count >= 2:
+    risk_level = "SUSPICIOUS"
+elif fraud_count >= 1:
+    risk_level = "WATCH"
+else:
+    risk_level = "NORMAL"
 
 # =====================================================
 # PROFILE STATUS
@@ -186,14 +196,13 @@ if alerts:
 
 total = len(user_df)
 
-fraud = risk_data["fraud_count"]
-
+fraud = fraud_count
 volume = round(
     user_df["amount"].sum(),
     2
 )
 
-avg_risk = risk_data["avg_risk"]
+avg_risk = risk_score / 100
 
 col1, col2, col3, col4 = st.columns(4)
 
@@ -474,10 +483,8 @@ if risk_level in ["WATCH", "SUSPICIOUS"]:
     st.subheader("🚨 High Risk Operations")
 
     high_risk_df = user_df[
-        (user_df["risk_level"] == "REVIEW")
-        |
-        (user_df["risk_level"] == "DECLINED")
-    ]
+        user_df["is_fraud"] == True
+        ]
 
     if not high_risk_df.empty:
 
@@ -488,9 +495,7 @@ if risk_level in ["WATCH", "SUSPICIOUS"]:
             "country",
             "device",
             "merchant",
-            "transaction_type",
-            "risk_score",
-            "risk_level"
+            "transaction_type"
         ]
 
         if "fraud_reasons" in high_risk_df.columns:
