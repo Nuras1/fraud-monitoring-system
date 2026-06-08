@@ -356,37 +356,37 @@ st.plotly_chart(
 
 st.subheader("📈 Transaction Timeline")
 
-user_df["timestamp"] = pd.to_datetime(
-    user_df["timestamp"],
+df["timestamp"] = pd.to_datetime(
+    df["timestamp"],
+    format="mixed",
     errors="coerce"
 )
 
 timeline = (
-    user_df
+
+    df
+
     .dropna(subset=["timestamp"])
+
     .groupby(
-        user_df["timestamp"].dt.date
+        df["timestamp"].dt.date
     )
+
     .size()
+
     .reset_index(name="count")
 )
 
-if not timeline.empty:
+fig_time = px.bar(
+    timeline,
+    x="timestamp",
+    y="count"
+)
 
-    fig_time = px.bar(
-        timeline,
-        x="timestamp",
-        y="count"
-    )
-
-    st.plotly_chart(
-        fig_time,
-        use_container_width=True
-    )
-
-else:
-
-    st.info("No timeline data available")
+st.plotly_chart(
+    fig_time,
+    use_container_width=True
+)
 
 # =====================================================
 # FRAUD BY COUNTRY
