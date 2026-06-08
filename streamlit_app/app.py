@@ -1,5 +1,5 @@
 import streamlit as st
-import requests
+#import requests
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -15,10 +15,34 @@ sys.path.append(
     )
 )
 
+#API_URL = "http://127.0.0.1:8000/transactions"
 # from backend.user_risk_engine import calculate_user_risk
 
-API_URL = "http://127.0.0.1:8000/transactions"
+@st.cache_data
+def load_data():
 
+    project_root = os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__),
+            ".."
+        )
+    )
+
+    csv_path = os.path.join(
+        project_root,
+        "transactions.csv"
+    )
+
+    df = pd.read_csv(csv_path)
+
+    if "timestamp" in df.columns:
+        df["timestamp"] = pd.to_datetime(
+            df["timestamp"],
+            errors="coerce"
+        )
+
+    return df
+df = load_data()
 # =====================================================
 # PAGE CONFIG
 # =====================================================
@@ -33,7 +57,7 @@ st.title("💳 Fraud Monitoring Dashboard")
 # =====================================================
 # LOAD DATA
 # =====================================================
-
+"""
 @st.cache_data(ttl=10, show_spinner=False)
 def load_data():
 
@@ -71,7 +95,7 @@ if df.empty:
     st.warning("No transactions available")
 
     st.stop()
-
+"""
 # =====================================================
 # GLOBAL METRICS
 # =====================================================
