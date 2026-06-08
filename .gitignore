@@ -1,0 +1,9 @@
+venv/
+.venv/
+.idea/
+__pycache__/
+
+*.pyc
+*.pyo
+
+fraud_monitoring.db
