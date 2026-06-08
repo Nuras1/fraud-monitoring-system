@@ -1,12 +1,12 @@
 import streamlit as st
-import requests
 import pandas as pd
+import os
 import plotly.express as px
 import plotly.graph_objects as go
 
 #from backend.user_risk_engine import calculate_user_risk
 
-API_URL = "http://127.0.0.1:8000/transactions"
+#API_URL = "http://127.0.0.1:8000/transactions"
 
 st.title("👤 User Profile Overview")
 
@@ -14,37 +14,31 @@ st.title("👤 User Profile Overview")
 # LOAD DATA
 # =====================================================
 
-@st.cache_data(ttl=10, show_spinner=False)
+@st.cache_data
 def load_data():
 
-    try:
+    project_root = os.path.abspath(
+        os.path.join(
+            os.path.dirname(__file__),
+            "..",
+            ".."
+        )
+    )
 
-        response = requests.get(
-            API_URL,
-            timeout=5
+    csv_path = os.path.join(
+        project_root,
+        "transactions.csv"
+    )
+
+    df = pd.read_csv(csv_path)
+
+    if "timestamp" in df.columns:
+        df["timestamp"] = pd.to_datetime(
+            df["timestamp"],
+            errors="coerce"
         )
 
-        if response.status_code != 200:
-            return pd.DataFrame()
-
-        df = pd.DataFrame(
-            response.json()
-        )
-
-        if "timestamp" in df.columns:
-
-            df["timestamp"] = pd.to_datetime(
-    df["timestamp"],
-    format="mixed",
-    errors="coerce"
-)
-
-        return df
-
-    except:
-        return pd.DataFrame()
-
-
+    return df
 df = load_data()
 
 if df.empty:
