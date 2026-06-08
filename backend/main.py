@@ -33,6 +33,11 @@ def get_transactions_csv():
 
     df = pd.read_csv(csv_path)
 
+    df = df.where(
+        pd.notnull(df),
+        None
+    )
+
     return df.to_dict(
         orient="records"
     )
