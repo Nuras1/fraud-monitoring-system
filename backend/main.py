@@ -33,14 +33,15 @@ def get_transactions_csv():
 
     df = pd.read_csv(csv_path)
 
-    df = df.where(
-        pd.notnull(df),
-        None
-    )
+    # Заменяем все NaN
+    df = df.fillna("")
 
-    return df.to_dict(
+    # Преобразуем DataFrame в обычные dict
+    records = df.astype(object).to_dict(
         orient="records"
     )
+
+    return records
 
 @app.on_event("startup")
 def on_startup():
