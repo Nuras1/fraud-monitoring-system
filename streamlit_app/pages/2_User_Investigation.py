@@ -29,8 +29,16 @@ def load_data():
     )
 
     if "timestamp" in df.columns:
+        df["timestamp"] = (
+            df["timestamp"]
+            .astype(str)
+            .str.replace("T", " ", regex=False)
+            .str.strip()
+        )
+
         df["timestamp"] = pd.to_datetime(
             df["timestamp"],
+            format="mixed",
             errors="coerce"
         )
 
