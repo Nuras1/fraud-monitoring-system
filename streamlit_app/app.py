@@ -372,7 +372,7 @@ timeline = (
     df
     .sort_values("timestamp")
     .set_index("timestamp")
-    .resample("1D")
+    .resample("1H")
     .size()
     .reset_index(name="transactions")
 )
