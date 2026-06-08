@@ -284,15 +284,27 @@ st.write(
 # TRANSACTION TIMELINE
 # =====================================================
 
-if tx_count >= 10:
+st.subheader("📈 Transaction Timeline")
 
-    st.subheader("📈 Transaction Timeline")
+user_df = user_df.copy()
+
+user_df["timestamp"] = pd.to_datetime(
+    user_df["timestamp"],
+    format="mixed",
+    errors="coerce"
+)
+
+user_df = user_df.dropna(
+    subset=["timestamp"]
+)
+
+if not user_df.empty:
 
     timeline = (
         user_df
         .sort_values("timestamp")
         .set_index("timestamp")
-        .resample("1D")
+        .resample("D")
         .size()
         .reset_index(name="transactions")
     )
@@ -320,7 +332,7 @@ if tx_count >= 10:
 else:
 
     st.info(
-        "Profile is still learning. Not enough transaction history for timeline analysis."
+        "No timeline data available"
     )
 # =====================================================
 # RECIPIENTS
