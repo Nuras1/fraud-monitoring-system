@@ -16,7 +16,7 @@ sys.path.append(
 )
 
 API_URL = "https://fraud-monitoring-api.onrender.com/transactions"
-# from backend.user_risk_engine import calculate_user_risk
+from backend.user_risk_engine import calculate_user_risk
 
 @st.cache_data(ttl=30)
 def load_data():
@@ -158,9 +158,10 @@ for user_id in df["user_id"].unique():
         df["user_id"] == user_id
     ]
 
-    #risk_data = calculate_user_risk(
-    #    user_df
-    #)
+    risk_data = calculate_user_risk(
+        user_df
+    )
+
     tx_count = len(user_df)
 
     if tx_count < 10:
@@ -182,31 +183,17 @@ for user_id in df["user_id"].unique():
         "profile_status": profile_status,
 
         "avg_risk": round(
-            user_df["risk_score"].mean() * 100,
-            2
-        ),
+    risk_data["avg_risk"] * 100,
+    2
+),
 
-        "fraud_count": int(
-            user_df["is_fraud"].sum()
-        ),
+"fraud_count": risk_data["fraud_count"],
 
-        "fraud_ratio": round(
-            user_df["is_fraud"].mean() * 100,
-            2
-        ),
+"fraud_ratio": risk_data["fraud_ratio"],
 
-        "user_risk": round(
-            user_df["risk_score"].mean() * 100,
-            2
-        ),
+"user_risk": risk_data["risk_score"],
 
-        "status": (
-            "SUSPICIOUS"
-            if user_df["is_fraud"].sum() >= 3
-            else "WATCH"
-            if user_df["is_fraud"].sum() >= 1
-            else "NORMAL"
-        )
+"status": risk_data["status"]
     })
 
 user_stats = pd.DataFrame(users)

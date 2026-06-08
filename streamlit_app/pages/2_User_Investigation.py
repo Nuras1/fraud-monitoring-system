@@ -5,8 +5,8 @@ import plotly.express as px
 import os
 import plotly.graph_objects as go
 
-#from backend.user_risk_engine import calculate_user_risk
-#from backend.risk_engine import analyze_user
+from backend.user_risk_engine import calculate_user_risk
+from backend.risk_engine import analyze_user
 
 
 API_URL = "https://fraud-monitoring-api.onrender.com/transactions"
@@ -105,28 +105,17 @@ if user_df.empty:
 # USER RISK
 # =====================================================
 
-fraud_count = int(
-    user_df["is_fraud"].sum()
+risk_data = calculate_user_risk(
+    user_df
 )
 
-fraud_ratio = round(
-    user_df["is_fraud"].mean() * 100,
-    2
-)
+risk_score = risk_data["risk_score"]
 
-risk_score = round(
-    user_df["risk_score"].mean() * 100,
-    2
-)
+risk_level = risk_data["status"]
 
-if fraud_ratio >= 50 or risk_score >= 65:
-    risk_level = "SUSPICIOUS"
+fraud_ratio = risk_data["fraud_ratio"]
 
-elif fraud_ratio >= 10 or risk_score >= 35:
-    risk_level = "WATCH"
-
-else:
-    risk_level = "NORMAL"
+fraud_count = risk_data["fraud_count"]
 
 # =====================================================
 # HEADER
@@ -146,7 +135,7 @@ night_tx = user_df[
     )
 ]
 
-alerts = []
+alerts = analyze_user(user_df)
 
 if fraud_ratio >= 20:
     alerts.append(
