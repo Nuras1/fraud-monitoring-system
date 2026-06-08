@@ -43,8 +43,17 @@ def load_data():
 
     return df
 df = load_data()
-st.write(df.columns.tolist())
-st.stop()
+# временно создаем поля для Streamlit
+
+df["risk_score"] = df["is_fraud"].apply(
+    lambda x: 0.9 if x else 0.2
+)
+
+df["risk_level"] = df["is_fraud"].apply(
+    lambda x: "DECLINED" if x else "APPROVED"
+)
+
+
 # =====================================================
 # PAGE CONFIG
 # =====================================================
