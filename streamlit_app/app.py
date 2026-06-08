@@ -361,7 +361,19 @@ st.write(
     .value_counts()
 )
 st.subheader("📈 Transaction Timeline")
+bad_rows = df[
+    pd.to_datetime(
+        df["timestamp"],
+        errors="coerce"
+    ).isna()
+]
 
+st.write(
+    bad_rows["timestamp"]
+    .astype(str)
+    .value_counts()
+    .head(50)
+)
 df["timestamp"] = (
     pd.to_datetime(
         df["timestamp"],
