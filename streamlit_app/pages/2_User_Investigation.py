@@ -432,7 +432,9 @@ if not high_risk_df.empty:
         "country",
         "device",
         "merchant",
-        "transaction_type"
+        "transaction_type",
+        "risk_score",
+        "risk_level"
     ]
 
     if "fraud_reasons" in high_risk_df.columns:
@@ -443,12 +445,12 @@ if not high_risk_df.empty:
 
     st.dataframe(
 
-        high_risk_df[display_cols]
+        high_risk_df
 
         .sort_values(
             "risk_score",
             ascending=False
-        ),
+        )[display_cols],
 
         use_container_width=True
     )
@@ -458,7 +460,6 @@ else:
     st.info(
         "No high-risk transactions detected"
     )
-
 # =====================================================
 # BEHAVIORAL INDICATORS
 # =====================================================
