@@ -15,7 +15,7 @@ sys.path.append(
     )
 )
 
-from backend.user_risk_engine import calculate_user_risk
+# from backend.user_risk_engine import calculate_user_risk
 
 API_URL = "http://127.0.0.1:8000/transactions"
 
@@ -141,9 +141,9 @@ for user_id in df["user_id"].unique():
         df["user_id"] == user_id
     ]
 
-    risk_data = calculate_user_risk(
-        user_df
-    )
+    #risk_data = calculate_user_risk(
+    #    user_df
+    #)
     tx_count = len(user_df)
 
     if tx_count < 10:
@@ -161,17 +161,35 @@ for user_id in df["user_id"].unique():
             user_df["amount"].sum(),
             2
         ),
+
         "profile_status": profile_status,
 
-        "avg_risk": risk_data["avg_risk"],
+        "avg_risk": round(
+            user_df["risk_score"].mean() * 100,
+            2
+        ),
 
-        "fraud_count": risk_data["fraud_count"],
+        "fraud_count": int(
+            user_df["is_fraud"].sum()
+        ),
 
-        "fraud_ratio": risk_data["fraud_ratio"],
+        "fraud_ratio": round(
+            user_df["is_fraud"].mean() * 100,
+            2
+        ),
 
-        "user_risk": risk_data["risk_score"],
+        "user_risk": round(
+            user_df["risk_score"].mean() * 100,
+            2
+        ),
 
-        "status": risk_data["status"]
+        "status": (
+            "SUSPICIOUS"
+            if user_df["is_fraud"].sum() >= 3
+            else "WATCH"
+            if user_df["is_fraud"].sum() >= 1
+            else "NORMAL"
+        )
     })
 
 user_stats = pd.DataFrame(users)
