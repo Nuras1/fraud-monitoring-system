@@ -38,12 +38,29 @@ def load_data():
 
 df = load_data()
 
-df["risk_score"] = df["is_fraud"].apply(
-    lambda x: 90 if float(x) == 1 else 20
+if df.empty:
+
+    st.warning("No transactions available")
+    st.stop()
+
+df["risk_score"] = pd.to_numeric(
+    df["risk_score"],
+    errors="coerce"
+).fillna(0)
+
+df["is_fraud"] = (
+    pd.to_numeric(
+        df["is_fraud"],
+        errors="coerce"
+    )
+    .fillna(0)
+    .astype(int)
 )
 
-df["risk_level"] = df["is_fraud"].apply(
-    lambda x: "DECLINED" if float(x) == 1 else "APPROVED"
+df["risk_level"] = (
+    df["risk_level"]
+    .astype(str)
+    .str.upper()
 )
 
 if df.empty:
@@ -80,7 +97,9 @@ if user_df.empty:
 # USER RISK
 # =====================================================
 
-fraud_count = int(user_df["is_fraud"].sum())
+fraud_count = int(
+    user_df["is_fraud"].sum()
+)
 
 fraud_ratio = round(
     user_df["is_fraud"].mean() * 100,
@@ -88,15 +107,16 @@ fraud_ratio = round(
 )
 
 risk_score = round(
-    (fraud_ratio * 0.8)
-    + min(fraud_count * 10, 20),
+    user_df["risk_score"].mean() * 100,
     2
 )
 
-if fraud_count >= 2:
+if fraud_ratio >= 50 or risk_score >= 65:
     risk_level = "SUSPICIOUS"
-elif fraud_count >= 1:
+
+elif fraud_ratio >= 10 or risk_score >= 35:
     risk_level = "WATCH"
+
 else:
     risk_level = "NORMAL"
 
@@ -220,9 +240,7 @@ else:
 # =====================================================
 # RISK DISTRIBUTION
 # =====================================================
-user_df["risk_score"] = user_df["is_fraud"].apply(
-    lambda x: 90 if x else 20
-)
+
 st.subheader("📉 Risk Distribution")
 
 fig_risk = px.histogram(
@@ -401,7 +419,9 @@ st.plotly_chart(
 st.subheader("🚨 High Risk Operations")
 
 high_risk_df = user_df[
-    user_df["is_fraud"] == True
+    user_df["risk_level"].isin(
+        ["REVIEW", "DECLINED"]
+    )
 ]
 
 if not high_risk_df.empty:
