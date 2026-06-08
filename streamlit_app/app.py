@@ -68,45 +68,7 @@ st.title("💳 Fraud Monitoring Dashboard")
 # =====================================================
 # LOAD DATA
 # =====================================================
-"""
-@st.cache_data(ttl=10, show_spinner=False)
-def load_data():
 
-    try:
-
-        response = requests.get(
-            API_URL,
-            timeout=5
-        )
-
-        if response.status_code != 200:
-            return pd.DataFrame()
-
-        df = pd.DataFrame(
-            response.json()
-        )
-
-        if "timestamp" in df.columns:
-            df["timestamp"] = pd.to_datetime(
-                df["timestamp"],
-                format="mixed",
-                errors="coerce"
-            )
-
-        return df
-
-    except:
-        return pd.DataFrame()
-
-
-df = load_data()
-
-if df.empty:
-
-    st.warning("No transactions available")
-
-    st.stop()
-"""
 # =====================================================
 # GLOBAL METRICS
 # =====================================================
